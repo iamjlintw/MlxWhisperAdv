@@ -26,6 +26,13 @@ OUTPUT_DIR = _get("OUTPUT_DIR", str(BASE_DIR / "output"))
 # large-v3 最準但較慢；要快可改 mlx-community/whisper-base 或 whisper-small。
 WHISPER_MODEL = _get("WHISPER_MODEL", "mlx-community/whisper-large-v3-mlx")
 
+# TUI 模型選單可選項：(顯示名, repo id, 說明)。
+WHISPER_MODELS = [
+    ("base", "mlx-community/whisper-base-mlx", "最快，精度較低"),
+    ("small", "mlx-community/whisper-small-mlx", "速度與精度平衡"),
+    ("large-v3", "mlx-community/whisper-large-v3-mlx", "最準，較慢、較吃記憶體"),
+]
+
 # 語言：None 代表自動偵測；可設 "zh"、"en" 等。
 WHISPER_LANGUAGE = os.environ.get("WHISPER_LANGUAGE") or None
 

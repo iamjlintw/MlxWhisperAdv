@@ -57,11 +57,25 @@ def _resolve_input(args) -> str:
     return str(selected)
 
 
+def _resolve_model(args):
+    """取得模型：有指定 --model 就用；否則在終端機跳選單，非終端機用預設。"""
+    if args.model:
+        return args.model
+    if sys.stdin.isatty():
+        return picker.select_model()  # None 表示取消
+    return config.WHISPER_MODEL
+
+
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
 
     input_path = _resolve_input(args)
     if input_path is None:
+        return 1
+
+    model = _resolve_model(args)
+    if model is None:
+        print("已取消。")
         return 1
 
     # 未指定 -o 時，預設輸出到 output/<檔名>。
@@ -79,7 +93,7 @@ def main(argv=None) -> int:
         written = pipeline.run(
             input_path=input_path,
             output=output,
-            model=args.model,
+            model=model,
             language=args.language,
             device=args.device,
             separate=not args.no_separation,

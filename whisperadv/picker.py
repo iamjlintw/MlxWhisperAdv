@@ -1,4 +1,4 @@
-"""TUI 檔案選單：列出 import/ 內的媒體檔，用方向鍵選擇要加字幕的檔案。
+"""TUI 選單：列出選項用方向鍵選擇（檔案、模型皆可）。
 
 互動採 stdlib termios/tty（cbreak 模式），不需額外依賴；
 非終端機環境或無法進入 cbreak 時，退回輸入編號的純文字選單。
@@ -13,6 +13,8 @@ from typing import List, Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+
+import config
 
 # 視為媒體的副檔名
 MEDIA_EXTS = {
@@ -37,19 +39,13 @@ def _human_size(num: int) -> str:
         num /= 1024
 
 
-def _render(files: List[Path], idx: int) -> Panel:
+def _render(title: str, subtitle: str, labels: List[str], idx: int) -> Panel:
     body = Text()
-    for i, f in enumerate(files):
+    for i, label in enumerate(labels):
         selected = i == idx
         prefix = "❯ " if selected else "  "
-        line = f"{prefix}{f.name}  ({_human_size(f.stat().st_size)})"
-        body.append(line + "\n", style="reverse bold cyan" if selected else "")
-    return Panel(
-        body,
-        title="選擇要加字幕的檔案",
-        subtitle="↑/↓ 或 j/k 移動，Enter 選擇，q 取消",
-        border_style="cyan",
-    )
+        body.append(prefix + label + "\n", style="reverse bold cyan" if selected else "")
+    return Panel(body, title=title, subtitle=subtitle, border_style="cyan")
 
 
 def _read_key() -> str:
@@ -77,8 +73,8 @@ def _read_key() -> str:
     return ch.decode(errors="ignore")
 
 
-def _select_cbreak(files: List[Path], console: Console) -> Optional[Path]:
-    """方向鍵互動選單。回傳選中的檔案，取消則 None。"""
+def _menu_cbreak(labels: List[str], title: str, subtitle: str, console: Console) -> Optional[int]:
+    """方向鍵互動選單。回傳選中的索引，取消則 None。"""
     import termios
     import tty
     from rich.live import Live
@@ -88,48 +84,70 @@ def _select_cbreak(files: List[Path], console: Console) -> Optional[Path]:
     old = termios.tcgetattr(fd)
     try:
         tty.setcbreak(fd)
-        with Live(_render(files, idx), console=console, auto_refresh=False, screen=False) as live:
+        with Live(_render(title, subtitle, labels, idx), console=console,
+                  auto_refresh=False, screen=False) as live:
             while True:
-                live.update(_render(files, idx))
+                live.update(_render(title, subtitle, labels, idx))
                 live.refresh()
                 key = _read_key()
                 if key == "up":
-                    idx = (idx - 1) % len(files)
+                    idx = (idx - 1) % len(labels)
                 elif key == "down":
-                    idx = (idx + 1) % len(files)
+                    idx = (idx + 1) % len(labels)
                 elif key == "enter":
-                    return files[idx]
+                    return idx
                 elif key in ("quit", "esc", "ctrl-c", "eof"):
                     return None
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
-def _select_numbered(files: List[Path], console: Console) -> Optional[Path]:
-    """備援：列編號讓使用者輸入選擇。"""
+def _menu_numbered(labels: List[str], title: str, console: Console) -> Optional[int]:
+    """備援：列編號讓使用者輸入選擇。回傳索引，取消則 None。"""
     from rich.prompt import IntPrompt
 
-    console.print("[bold cyan]選擇要加字幕的檔案：[/]")
-    for i, f in enumerate(files, start=1):
-        console.print(f"  [bold]{i}[/]. {f.name}  ([dim]{_human_size(f.stat().st_size)}[/])")
+    console.print(f"[bold cyan]{title}：[/]")
+    for i, label in enumerate(labels, start=1):
+        console.print(f"  [bold]{i}[/]. {label}")
     try:
         n = IntPrompt.ask("輸入編號（0 取消）", default=1)
     except (EOFError, KeyboardInterrupt):
         return None
-    if n < 1 or n > len(files):
+    if n < 1 or n > len(labels):
         return None
-    return files[n - 1]
+    return n - 1
 
 
-def select_file(files: List[Path], console: Console = None) -> Optional[Path]:
-    """從清單選一個檔案。終端機用方向鍵選單，否則退回編號輸入。"""
-    console = console or Console()
-    if not files:
+def _menu(labels: List[str], title: str, subtitle: str, console: Console) -> Optional[int]:
+    """通用選單：終端機用方向鍵，否則退回編號輸入。回傳選中索引或 None。"""
+    if not labels:
         return None
     if sys.stdin.isatty():
         try:
-            return _select_cbreak(files, console)
+            return _menu_cbreak(labels, title, subtitle, console)
         except Exception:
             # 某些終端無法進入 cbreak，退回編號模式。
-            return _select_numbered(files, console)
-    return _select_numbered(files, console)
+            return _menu_numbered(labels, title, console)
+    return _menu_numbered(labels, title, console)
+
+
+_NAV = "↑/↓ 或 j/k 移動，Enter 選擇，q 取消"
+
+
+def select_file(files: List[Path], console: Console = None) -> Optional[Path]:
+    """從媒體檔清單選一個。回傳 Path，取消則 None。"""
+    console = console or Console()
+    if not files:
+        return None
+    labels = [f"{f.name}  ({_human_size(f.stat().st_size)})" for f in files]
+    idx = _menu(labels, "選擇要加字幕的檔案", _NAV, console)
+    return None if idx is None else files[idx]
+
+
+def select_model(console: Console = None) -> Optional[str]:
+    """選擇 Whisper 模型。回傳 repo id，取消則 None。"""
+    console = console or Console()
+    models = config.WHISPER_MODELS
+    labels = [f"{name:<9} {desc}" for name, _repo, desc in models]
+    idx = _menu(labels, "選擇辨識模型", _NAV, console)
+    return None if idx is None else models[idx][1]
