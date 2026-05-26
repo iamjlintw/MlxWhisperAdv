@@ -5,6 +5,8 @@ demucs>=4.0.0
 mlx-whisper>=0.4.0
 # 字幕輸出
 webvtt-py>=0.4.6
+# TUI 進度表
+rich>=13.0.0
 # 設定檔
 python-dotenv>=1.0.0
 # Demucs 會自帶 torch / torchaudio，這裡明列以鎖最低版本

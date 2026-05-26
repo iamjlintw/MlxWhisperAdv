@@ -3,7 +3,7 @@
 
 範例：
     python main.py input.mp4
-    python main.py input.mp4 -o out/myvideo --model mlx-community/whisper-base --format both
+    python main.py input.mp4 -o out/myvideo --model mlx-community/whisper-base-mlx --format both
     python main.py podcast.mp3 --no-separation --language zh
 """
 
@@ -12,6 +12,7 @@ import sys
 
 import config
 from whisperadv import pipeline
+from whisperadv.ui import make_reporter
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -28,11 +29,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", default=None, choices=["vtt", "srt", "both"],
                    help=f"字幕格式（預設 {config.DEFAULT_FORMAT}）")
     p.add_argument("--keep-temp", action="store_true", help="保留暫存目錄（除錯用）")
+    p.add_argument("--no-tui", action="store_true", help="關閉 TUI 進度表，改純文字輸出")
     return p
 
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+
+    # 非終端機（如導向檔案）或使用者指定時，退回純文字。
+    use_tui = not args.no_tui and sys.stdout.isatty()
+    reporter = make_reporter(use_tui)
+
     try:
         written = pipeline.run(
             input_path=args.input,
@@ -43,6 +50,7 @@ def main(argv=None) -> int:
             separate=not args.no_separation,
             fmt=args.format,
             keep_temp=args.keep_temp,
+            reporter=reporter,
         )
     except (FileNotFoundError, RuntimeError, ValueError) as exc:
         print(f"錯誤：{exc}", file=sys.stderr)
