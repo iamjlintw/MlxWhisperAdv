@@ -36,16 +36,21 @@
    - `main.py` — argparse CLI（input / -o / --model / --language / --device / --no-separation / --format / --keep-temp）
    - `setup_mac.sh`、`README.md`（繁中）、`.gitignore`
 
-## ⬜ 尚未完成（下次接續）
-1. **安裝依賴**（pip install 這步使用者尚未批准執行）：
-   ```bash
-   cd /Users/jlin/codes/tool/MlxWhisperAdv
-   ./setup_mac.sh   # 或 .venv/bin/python -m pip install -r requirements.txt
-   ```
-   注意：demucs 在 Python 3.12 可能有依賴小摩擦，裝完 setup 會自動驗證 import + MPS 可用性。
-2. **測試**：找一段短影片跑完整 pipeline，驗證輸出 .vtt。
-3. **推 GitHub**：建立新 repo（建議 `MlxWhisperAdv`），git init → push。
+7. **安裝依賴完成**：`./setup_mac.sh` 跑完，所有套件裝好，
+   `mlx_whisper / demucs / torch` import OK，**torch MPS 可用 = True**。
+   （實際版本：torch 2.12.0 / demucs 4.0.1 / mlx-whisper 0.4.3 / numpy 2.4.6）
+8. **推 GitHub 完成**：已推到 **public** repo
+   <https://github.com/iamjlintw/MlxWhisperAdv>（branch main，origin 走 SSH）。
+   `.claude/` 已加入 .gitignore 不入庫。
 
-## 待使用者確認的點
-- 新 repo 名稱與是否 public/private。
-- Whisper 模型大小預設（large-v3 準但慢，base/small 快）。
+## ⬜ 尚未完成（下次接續）
+1. **真實素材端對端測試**：目前僅做到 import / 語法 / MPS 驗證；
+   尚未拿真正的影片跑完整 pipeline 驗證 .vtt 內容。
+   需要一段短影片/音檔：
+   ```bash
+   .venv/bin/python main.py <影片> --model mlx-community/whisper-base   # 先用小模型快速驗證
+   ```
+
+## 已確認的決定
+- repo 名稱 `MlxWhisperAdv`，**public**。
+- Whisper 預設模型 **large-v3**（config.WHISPER_MODEL = mlx-community/whisper-large-v3-mlx）。
