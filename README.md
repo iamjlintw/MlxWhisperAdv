@@ -51,8 +51,10 @@ python3 -m venv .venv
 
 ```bash
 # 把檔案放進 import/ 後：
-.venv/bin/python main.py
+./run.sh
 ```
+
+`run.sh` 會自動用 venv 執行，並把參數原樣傳給 `main.py`（等同 `.venv/bin/python main.py`）。
 
 執行後會依序出現兩個 TUI 選單：
 
@@ -69,10 +71,10 @@ python3 -m venv .venv
 .venv/bin/python main.py input.mp4
 
 # 自訂輸出、模型、格式
-.venv/bin/python main.py input.mp4 -o out/myvideo --model mlx-community/whisper-base-mlx --format both
+./run.sh input.mp4 -o out/myvideo --model mlx-community/whisper-base-mlx --format both
 
 # 純語音（背景乾淨）可略過人聲分離以加速
-.venv/bin/python main.py podcast.mp3 --no-separation --language zh
+./run.sh podcast.mp3 --no-separation --language zh
 ```
 
 ### 參數
