@@ -45,5 +45,11 @@ DEMUCS_MODEL = _get("DEMUCS_MODEL", "htdemucs")
 # 預設字幕輸出格式：vtt / srt / both。
 DEFAULT_FORMAT = _get("DEFAULT_FORMAT", "vtt")
 
+# 是否把中文字幕轉成繁體（台灣用語）。
+CONVERT_TO_TW = _get("CONVERT_TO_TW", "1").lower() not in ("0", "false", "no", "")
+
+# OpenCC 轉換設定檔：s2twp = 簡轉繁 + 台灣慣用詞（信息→資訊、視頻→影片…）。
+OPENCC_PROFILE = _get("OPENCC_PROFILE", "s2twp")
+
 # ffmpeg 執行檔路徑（已裝在 PATH 即可）。
 FFMPEG_BIN = _get("FFMPEG_BIN", "ffmpeg")

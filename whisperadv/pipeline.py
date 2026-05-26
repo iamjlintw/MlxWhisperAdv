@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import config
-from whisperadv import audio, separator, subtitles, transcriber
+from whisperadv import audio, separator, subtitles, transcriber, zhconv
 from whisperadv.ui import NullReporter
 
 
@@ -31,6 +31,7 @@ def run(
     separate: bool = True,
     fmt: Optional[str] = None,
     keep_temp: bool = False,
+    to_tw: bool = True,
     reporter=None,
 ) -> List[str]:
     """執行完整 pipeline，回傳產生的字幕檔路徑清單。
@@ -84,6 +85,9 @@ def run(
                 with _quiet_if(reporter.live):
                     result = transcriber.transcribe(speech, model=model, language=language)
                 segments = result.get("segments", [])
+                # 中文才做簡→繁（台灣用語）轉換，避免動到其他語言。
+                if to_tw and result.get("language") == "zh":
+                    zhconv.convert_segments(segments)
                 reporter.finish_stage()
 
                 # 4) 輸出字幕
