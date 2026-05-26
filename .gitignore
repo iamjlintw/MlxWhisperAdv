@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# 虛擬環境
+.venv/
+venv/
+
+# 設定 / 機敏
+.env
+
+# 輸出與暫存
+*.wav
+*.vtt
+*.srt
+/output/
+/tmp/
+
+# macOS
+.DS_Store
+
+# Claude Code 本機設定
+.claude/
+
+# 模型快取（HuggingFace / Demucs 會自動下載）
+.cache/

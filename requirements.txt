@@ -1,0 +1,13 @@
+# macOS (Apple Silicon) 專用依賴
+# 人聲分離：Demucs（PyTorch / MPS，取代無法在 arm64 安裝的 Spleeter）
+demucs>=4.0.0
+# 語音辨識：mlx-whisper（Apple Silicon GPU 原生加速）
+mlx-whisper>=0.4.0
+# 字幕輸出
+webvtt-py>=0.4.6
+# 設定檔
+python-dotenv>=1.0.0
+# Demucs 會自帶 torch / torchaudio，這裡明列以鎖最低版本
+torch>=2.1.0
+torchaudio>=2.1.0
+numpy>=1.24.0
