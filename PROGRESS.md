@@ -43,13 +43,19 @@
    <https://github.com/iamjlintw/MlxWhisperAdv>（branch main，origin 走 SSH）。
    `.claude/` 已加入 .gitignore 不入庫。
 
-## ⬜ 尚未完成（下次接續）
-1. **真實素材端對端測試**：目前僅做到 import / 語法 / MPS 驗證；
-   尚未拿真正的影片跑完整 pipeline 驗證 .vtt 內容。
-   需要一段短影片/音檔：
-   ```bash
-   .venv/bin/python main.py <影片> --model mlx-community/whisper-base   # 先用小模型快速驗證
-   ```
+9. **真實素材端對端測試通過** ✅：用 `廠商端使用手冊影片V2.mp4`（約 7 分鐘）
+   跑完整 pipeline（ffmpeg → Demucs/MPS 分離 → whisper-base 辨識 → VTT+SRT），
+   產出 93 段字幕，格式 / 時間碼 / 繁中皆正確。
+   過程中修掉兩個 bug：
+   - **torchcodec 缺失**：torch 2.12/torchaudio 2.11 把音訊存檔委派給 torchcodec，
+     Demucs 存 vocals.wav 會失敗 → 已加入 requirements.txt 並安裝（與 ffmpeg 8.0 相容）。
+   - **模型 repo 名稱**：mlx-community 的 repo 都帶 `-mlx` 後綴
+     （正解 `whisper-base-mlx` / `whisper-large-v3-mlx`，不帶後綴會 401）。
+     config 預設值本來就正確；測試指令補上後綴後即通過。
+   - 備註：base 小模型辨識精度偏低（有錯字），預設 large-v3 會準很多。
+
+## 全部完成 🎉
+專案已可用。後續若要更準，直接用預設 large-v3 跑即可（較慢、較吃記憶體）。
 
 ## 已確認的決定
 - repo 名稱 `MlxWhisperAdv`，**public**。

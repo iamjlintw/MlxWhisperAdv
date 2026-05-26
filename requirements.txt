@@ -10,4 +10,6 @@ python-dotenv>=1.0.0
 # Demucs 會自帶 torch / torchaudio，這裡明列以鎖最低版本
 torch>=2.1.0
 torchaudio>=2.1.0
+# torchaudio 2.9+ 把音訊存/讀委派給 torchcodec，Demucs 存 vocals.wav 必需
+torchcodec>=0.1.0
 numpy>=1.24.0
