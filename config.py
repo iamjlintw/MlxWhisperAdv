@@ -1,14 +1,25 @@
 """集中設定。可由環境變數 / .env 覆寫，避免硬編碼。"""
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# 專案根目錄（本檔所在處），import/ 與 output/ 以此為基準。
+BASE_DIR = Path(__file__).resolve().parent
+
 
 def _get(key: str, default: str) -> str:
     return os.environ.get(key, default)
+
+
+# 匯入資料夾：把要加字幕的影片/音檔放這裡；不指定輸入時 TUI 會從這裡選。
+IMPORT_DIR = _get("IMPORT_DIR", str(BASE_DIR / "import"))
+
+# 輸出資料夾：字幕檔預設輸出到這裡。
+OUTPUT_DIR = _get("OUTPUT_DIR", str(BASE_DIR / "output"))
 
 
 # Whisper 模型（mlx-community 上的 MLX 量化版）

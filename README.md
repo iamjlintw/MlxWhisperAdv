@@ -14,6 +14,13 @@ macOS（Apple Silicon）專用的字幕產生工具：**影片 → 人聲分離 
 | 字幕輸出 | webvtt-py | WebVTT + SRT |
 | 環境 | conda × 3 | 單一 venv |
 
+## 資料夾
+
+| 資料夾 | 用途 |
+|---|---|
+| `import/` | 放要加字幕的影片/音檔；不帶參數執行時 TUI 從這裡選 |
+| `output/` | 字幕輸出位置（預設） |
+
 ## 環境需求
 
 - Apple Silicon（M 系列）+ macOS
@@ -37,12 +44,26 @@ python3 -m venv .venv
 
 ## 使用
 
+### 資料夾工作流（推薦）
+
+把要加字幕的影片/音檔丟進 `import/`，不帶任何參數執行，TUI 會列出 `import/`
+裡的檔案讓你用方向鍵選擇；字幕輸出到 `output/`。
+
 ```bash
-# 最簡單：輸出與輸入同名的 .vtt
+# 把檔案放進 import/ 後：
+.venv/bin/python main.py
+```
+
+選單操作：`↑`/`↓`（或 `j`/`k`）移動、`Enter` 選擇、`q` 取消。
+
+### 直接指定檔案
+
+```bash
+# 指定輸入（仍預設輸出到 output/）
 .venv/bin/python main.py input.mp4
 
-# 指定輸出、模型、格式
-.venv/bin/python main.py input.mp4 -o out/myvideo --model mlx-community/whisper-base --format both
+# 自訂輸出、模型、格式
+.venv/bin/python main.py input.mp4 -o out/myvideo --model mlx-community/whisper-base-mlx --format both
 
 # 純語音（背景乾淨）可略過人聲分離以加速
 .venv/bin/python main.py podcast.mp3 --no-separation --language zh

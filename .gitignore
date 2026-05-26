@@ -11,12 +11,15 @@ venv/
 # 設定 / 機敏
 .env
 
-# 輸出與暫存
+# 暫存
 *.wav
-*.vtt
-*.srt
-/output/
 /tmp/
+
+# import/ 與 output/ 保留資料夾本身，但不追蹤裡面的媒體與字幕檔
+import/*
+!import/.gitkeep
+output/*
+!output/.gitkeep
 
 # macOS
 .DS_Store

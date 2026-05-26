@@ -88,6 +88,7 @@ def run(
 
                 # 4) 輸出字幕
                 reporter.start_stage("輸出字幕")
+                Path(out_base).parent.mkdir(parents=True, exist_ok=True)
                 written = subtitles.write_subtitles(segments, out_base, fmt)
                 reporter.finish_stage()
             except Exception:
