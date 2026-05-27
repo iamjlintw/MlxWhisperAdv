@@ -167,7 +167,7 @@ def select_mode(console: Console = None) -> Optional[str]:
     console = console or Console()
     modes = [
         ("sub", "產生字幕    影片/音檔 → 辨識 → 字幕檔"),
-        ("burn", "燒錄字幕    影片 + 字幕 → 硬字幕影片"),
+        ("burn", "燒錄字幕    影片 + 字幕 → 內嵌字幕影片"),
     ]
     idx = _menu([label for _k, label in modes], "選擇要做什麼", _NAV, console)
     return None if idx is None else modes[idx][0]

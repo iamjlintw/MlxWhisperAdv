@@ -108,9 +108,9 @@ def run(
 
 def burn_only(video_path: str, subtitle_path: str, output: Optional[str] = None,
               reporter=None) -> str:
-    """燒錄路線：把現有字幕燒進現有影片，輸出硬字幕影片。回傳輸出路徑。
+    """燒錄路線：把現有字幕燒進現有影片，輸出內嵌字幕影片。回傳輸出路徑。
 
-    不跑辨識、不需模型/分離等設定。output 省略時為 <影片名>_硬字幕.mp4。
+    不跑辨識、不需模型/分離等設定。output 省略時為 <影片名>_內嵌字幕.mp4。
     """
     video = Path(video_path)
     if not video.exists():
@@ -120,7 +120,7 @@ def burn_only(video_path: str, subtitle_path: str, output: Optional[str] = None,
     if not burner.has_video(str(video)):
         raise RuntimeError(f"輸入無影像串流，無法燒錄字幕：{video.name}")
 
-    out_path = output or str(video.with_suffix("")) + "_硬字幕.mp4"
+    out_path = output or str(video.with_suffix("")) + "_內嵌字幕.mp4"
     reporter = reporter or NullReporter()
 
     with reporter:

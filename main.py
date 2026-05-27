@@ -2,7 +2,7 @@
 """MlxWhisperAdv：兩條獨立路線。
 
 - 產生字幕：影片/音檔 → 人聲分離 → Whisper → 字幕檔。
-- 燒錄字幕：現有影片 + 現有字幕 → 硬字幕影片（不跑辨識）。
+- 燒錄字幕：現有影片 + 現有字幕 → 內嵌字幕影片（不跑辨識）。
 
 不帶參數執行會進 TUI，先選路線；指定輸入檔則直接走產生字幕。
 素材放 import/，成果出 output/。
@@ -112,7 +112,7 @@ def run_burn(args) -> int:
         print("已取消。")
         return 1
 
-    out_path = args.output or str(Path(config.OUTPUT_DIR) / f"{video.stem}_硬字幕.mp4")
+    out_path = args.output or str(Path(config.OUTPUT_DIR) / f"{video.stem}_內嵌字幕.mp4")
     try:
         burned = pipeline.burn_only(str(video), str(sub), out_path, reporter=_make_reporter(args))
     except (FileNotFoundError, RuntimeError, ValueError) as exc:

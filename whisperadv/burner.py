@@ -1,4 +1,4 @@
-"""用 ffmpeg 把字幕燒錄（硬字幕）進影片，輸出新的 mp4。
+"""用 ffmpeg 把字幕燒錄（內嵌字幕）進影片，輸出新的 mp4。
 
 進度透過 on_progress(0~100) 回呼回報（解析 ffmpeg -progress 的 out_time_us）。
 """
