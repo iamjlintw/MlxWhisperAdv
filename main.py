@@ -37,6 +37,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--keep-temp", action="store_true", help="保留暫存目錄（除錯用）")
     p.add_argument("--no-tui", action="store_true", help="關閉 TUI 進度表，改純文字輸出")
     p.add_argument("--no-zhtw", action="store_true", help="關閉中文字幕轉繁體（台灣用語）")
+    p.add_argument("--burn", action="store_true",
+                   help="字幕燒錄進影片，另輸出 <檔名>_硬字幕.mp4")
     return p
 
 
@@ -101,6 +103,7 @@ def main(argv=None) -> int:
             fmt=args.format,
             keep_temp=args.keep_temp,
             to_tw=not args.no_zhtw and config.CONVERT_TO_TW,
+            burn=args.burn,
             reporter=reporter,
         )
     except (FileNotFoundError, RuntimeError, ValueError) as exc:

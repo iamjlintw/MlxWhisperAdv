@@ -2,6 +2,7 @@
 # MlxWhisperAdv 啟動腳本。
 #   ./run.sh                 # 從 import/ 選檔、選模型，輸出到 output/
 #   ./run.sh input.mp4       # 直接指定檔案
+#   ./run.sh input.mp4 --burn  # 順便把字幕燒進影片（硬字幕）
 #   ./run.sh input.mp4 --model mlx-community/whisper-base-mlx --format both
 # 所有參數會原樣傳給 main.py。
 set -euo pipefail

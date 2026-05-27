@@ -53,3 +53,7 @@ OPENCC_PROFILE = _get("OPENCC_PROFILE", "s2twp")
 
 # ffmpeg 執行檔路徑（已裝在 PATH 即可）。
 FFMPEG_BIN = _get("FFMPEG_BIN", "ffmpeg")
+
+# 硬字幕燒錄字型與字級（macOS 預設繁中字型 PingFang TC）。
+BURN_FONT = _get("BURN_FONT", "PingFang TC")
+BURN_FONT_SIZE = int(_get("BURN_FONT_SIZE", "20"))

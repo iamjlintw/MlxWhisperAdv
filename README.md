@@ -75,6 +75,9 @@ python3 -m venv .venv
 
 # 純語音（背景乾淨）可略過人聲分離以加速
 ./run.sh podcast.mp3 --no-separation --language zh
+
+# 產生字幕後，直接把字幕燒進影片（硬字幕），另存 <檔名>_硬字幕.mp4
+./run.sh input.mp4 --burn
 ```
 
 ### 參數
@@ -91,6 +94,7 @@ python3 -m venv .venv
 | `--keep-temp` | 保留暫存目錄（除錯） |
 | `--no-tui` | 關閉 TUI 進度表，改純文字輸出 |
 | `--no-zhtw` | 關閉中文轉繁體（預設會把中文字幕轉成繁體台灣用語） |
+| `--burn` | 把字幕燒錄進影片，另輸出 `<檔名>_硬字幕.mp4`（白字黑邊、PingFang TC） |
 
 ### 進度顯示
 
