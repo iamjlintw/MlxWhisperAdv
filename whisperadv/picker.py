@@ -16,20 +16,37 @@ from rich.text import Text
 
 import config
 
-# 視為媒體的副檔名
-MEDIA_EXTS = {
-    ".mp4", ".mov", ".mkv", ".avi", ".m4v", ".webm", ".flv", ".wmv", ".ts", ".mpg", ".mpeg",
-    ".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".wma",
-}
+# 視為影片的副檔名
+VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".avi", ".m4v", ".webm", ".flv", ".wmv", ".ts", ".mpg", ".mpeg"}
+# 視為音檔的副檔名
+AUDIO_EXTS = {".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".wma"}
+# 視為媒體（影片＋音檔）
+MEDIA_EXTS = VIDEO_EXTS | AUDIO_EXTS
+# 字幕副檔名
+SUB_EXTS = {".vtt", ".srt"}
+
+
+def _list_by_ext(folder: str, exts) -> List[Path]:
+    d = Path(folder)
+    if not d.exists():
+        return []
+    files = [p for p in d.iterdir() if p.is_file() and p.suffix.lower() in exts]
+    return sorted(files, key=lambda p: p.name.lower())
 
 
 def list_media(import_dir: str) -> List[Path]:
-    """列出 import_dir 內的媒體檔（依檔名排序）。"""
-    d = Path(import_dir)
-    if not d.exists():
-        return []
-    files = [p for p in d.iterdir() if p.is_file() and p.suffix.lower() in MEDIA_EXTS]
-    return sorted(files, key=lambda p: p.name.lower())
+    """列出資料夾內的媒體檔（影片＋音檔，依檔名排序）。"""
+    return _list_by_ext(import_dir, MEDIA_EXTS)
+
+
+def list_videos(folder: str) -> List[Path]:
+    """列出資料夾內的影片檔。"""
+    return _list_by_ext(folder, VIDEO_EXTS)
+
+
+def list_subtitles(folder: str) -> List[Path]:
+    """列出資料夾內的字幕檔（.vtt / .srt）。"""
+    return _list_by_ext(folder, SUB_EXTS)
 
 
 def _human_size(num: int) -> str:
@@ -134,14 +151,26 @@ def _menu(labels: List[str], title: str, subtitle: str, console: Console) -> Opt
 _NAV = "↑/↓ 或 j/k 移動，Enter 選擇，q 取消"
 
 
-def select_file(files: List[Path], console: Console = None) -> Optional[Path]:
-    """從媒體檔清單選一個。回傳 Path，取消則 None。"""
+def select_file(files: List[Path], title: str = "選擇要加字幕的檔案",
+                console: Console = None) -> Optional[Path]:
+    """從檔案清單選一個。回傳 Path，取消則 None。"""
     console = console or Console()
     if not files:
         return None
     labels = [f"{f.name}  ({_human_size(f.stat().st_size)})" for f in files]
-    idx = _menu(labels, "選擇要加字幕的檔案", _NAV, console)
+    idx = _menu(labels, title, _NAV, console)
     return None if idx is None else files[idx]
+
+
+def select_mode(console: Console = None) -> Optional[str]:
+    """選擇路線：'sub'（產生字幕）或 'burn'（燒錄字幕）。取消則 None。"""
+    console = console or Console()
+    modes = [
+        ("sub", "產生字幕    影片/音檔 → 辨識 → 字幕檔"),
+        ("burn", "燒錄字幕    影片 + 字幕 → 硬字幕影片"),
+    ]
+    idx = _menu([label for _k, label in modes], "選擇要做什麼", _NAV, console)
+    return None if idx is None else modes[idx][0]
 
 
 def select_model(console: Console = None) -> Optional[str]:

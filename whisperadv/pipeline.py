@@ -15,14 +15,6 @@ from whisperadv import audio, burner, separator, subtitles, transcriber, zhconv
 from whisperadv.ui import NullReporter
 
 
-def _pick_subtitle(written):
-    """燒錄優先用 .vtt，否則用第一個輸出的字幕檔。"""
-    for path in written:
-        if path.endswith(".vtt"):
-            return path
-    return written[0]
-
-
 def _quiet_if(active: bool):
     """active 時把 stderr 吞掉，避免 mlx_whisper 的進度條破壞 TUI 畫面。"""
     if active:
@@ -40,7 +32,6 @@ def run(
     fmt: Optional[str] = None,
     keep_temp: bool = False,
     to_tw: bool = True,
-    burn: bool = False,
     reporter=None,
 ) -> List[str]:
     """執行完整 pipeline，回傳產生的字幕檔路徑清單。
@@ -57,15 +48,10 @@ def run(
     fmt = fmt or config.DEFAULT_FORMAT
     out_base = output or str(src.with_suffix(""))
 
-    # 純音檔不能燒字幕；要求 burn 但無影像串流時，跳過並提示。
-    do_burn = burn and burner.has_video(str(src))
-
     stages = ["抽取音軌"]
     if separate:
         stages.append("人聲分離")
     stages += ["語音辨識", "輸出字幕"]
-    if do_burn:
-        stages.append("燒錄字幕")
 
     tmp_dir = tempfile.mkdtemp(prefix="mlxwhisperadv_")
     try:
@@ -77,8 +63,6 @@ def run(
                 "格式": fmt,
             })
             reporter.add_stages(stages)
-            if burn and not do_burn:
-                reporter.note("輸入無影像串流（純音檔），略過燒錄字幕。")
             try:
                 # 1) 抽音軌
                 reporter.start_stage("抽取音軌")
@@ -111,16 +95,6 @@ def run(
                 Path(out_base).parent.mkdir(parents=True, exist_ok=True)
                 written = subtitles.write_subtitles(segments, out_base, fmt)
                 reporter.finish_stage()
-
-                # 5) 燒錄硬字幕（可選）
-                if do_burn:
-                    reporter.start_stage("燒錄字幕", total=100)
-                    burned = burner.burn(
-                        str(src), _pick_subtitle(written), f"{out_base}_硬字幕.mp4",
-                        on_progress=reporter.update,
-                    )
-                    reporter.finish_stage()
-                    written.append(burned)
             except Exception:
                 reporter.error_current()
                 raise
@@ -130,3 +104,38 @@ def run(
             reporter.note(f"暫存目錄保留於：{tmp_dir}")
         else:
             shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+def burn_only(video_path: str, subtitle_path: str, output: Optional[str] = None,
+              reporter=None) -> str:
+    """燒錄路線：把現有字幕燒進現有影片，輸出硬字幕影片。回傳輸出路徑。
+
+    不跑辨識、不需模型/分離等設定。output 省略時為 <影片名>_硬字幕.mp4。
+    """
+    video = Path(video_path)
+    if not video.exists():
+        raise FileNotFoundError(f"找不到影片：{video_path}")
+    if not Path(subtitle_path).exists():
+        raise FileNotFoundError(f"找不到字幕：{subtitle_path}")
+    if not burner.has_video(str(video)):
+        raise RuntimeError(f"輸入無影像串流，無法燒錄字幕：{video.name}")
+
+    out_path = output or str(video.with_suffix("")) + "_硬字幕.mp4"
+    reporter = reporter or NullReporter()
+
+    with reporter:
+        reporter.header({
+            "影片": video.name,
+            "字幕": Path(subtitle_path).name,
+            "輸出": Path(out_path).name,
+        })
+        reporter.add_stages(["燒錄字幕"])
+        try:
+            reporter.start_stage("燒錄字幕", total=100)
+            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+            burner.burn(str(video), str(subtitle_path), out_path, on_progress=reporter.update)
+            reporter.finish_stage()
+        except Exception:
+            reporter.error_current()
+            raise
+    return out_path

@@ -44,41 +44,41 @@ python3 -m venv .venv
 
 ## 使用
 
-### 資料夾工作流（推薦）
+### 兩條路線（TUI，推薦）
 
-把要加字幕的影片/音檔丟進 `import/`，不帶任何參數執行，TUI 會列出 `import/`
-裡的檔案讓你用方向鍵選擇；字幕輸出到 `output/`。
+不帶任何參數執行，TUI 開頭會先讓你選路線：
 
 ```bash
-# 把檔案放進 import/ 後：
 ./run.sh
 ```
 
-`run.sh` 會自動用 venv 執行，並把參數原樣傳給 `main.py`（等同 `.venv/bin/python main.py`）。
+```
+選擇要做什麼
+  ❯ 產生字幕    影片/音檔 → 辨識 → 字幕檔
+    燒錄字幕    影片 + 字幕 → 硬字幕影片
+```
 
-執行後會依序出現兩個 TUI 選單：
+- **產生字幕**：從 `import/` 選檔 → 選模型（base / small / large-v3）→ 字幕輸出到 `output/`
+- **燒錄字幕**：從 `output/` 選一部影片 + 一份字幕 → 燒成 `output/<檔名>_硬字幕.mp4`
+  （不跑辨識、不需模型等設定）
 
-1. **選擇檔案** — 列出 `import/` 內的媒體檔
-2. **選擇模型** — `base`（最快）/ `small`（平衡）/ `large-v3`（最準）
+選單操作：`↑`/`↓`（或 `j`/`k`）移動、`Enter` 選擇、`q` 取消；
+非終端機環境自動改為輸入編號。`run.sh` 會用 venv 執行並透傳參數。
 
-選單操作：`↑`/`↓`（或 `j`/`k`）移動、`Enter` 選擇、`q` 取消。
-帶 `--model` 參數則跳過模型選單；非終端機環境自動改為輸入編號。
-
-### 直接指定檔案
+### 直接指定檔案（產生字幕）
 
 ```bash
-# 指定輸入（仍預設輸出到 output/）
-.venv/bin/python main.py input.mp4
+# 指定輸入（預設輸出到 output/）
+./run.sh input.mp4
 
 # 自訂輸出、模型、格式
 ./run.sh input.mp4 -o out/myvideo --model mlx-community/whisper-base-mlx --format both
 
 # 純語音（背景乾淨）可略過人聲分離以加速
 ./run.sh podcast.mp3 --no-separation --language zh
-
-# 產生字幕後，直接把字幕燒進影片（硬字幕），另存 <檔名>_硬字幕.mp4
-./run.sh input.mp4 --burn
 ```
+
+> 燒錄字幕是 TUI 專屬路線；指定輸入檔時一律走「產生字幕」。
 
 ### 參數
 
@@ -94,7 +94,8 @@ python3 -m venv .venv
 | `--keep-temp` | 保留暫存目錄（除錯） |
 | `--no-tui` | 關閉 TUI 進度表，改純文字輸出 |
 | `--no-zhtw` | 關閉中文轉繁體（預設會把中文字幕轉成繁體台灣用語） |
-| `--burn` | 把字幕燒錄進影片，另輸出 `<檔名>_硬字幕.mp4`（白字黑邊、PingFang TC） |
+
+> 燒錄字幕（硬字幕，白字黑邊、PingFang TC）走 TUI 的「燒錄字幕」路線，不是參數。
 
 ### 進度顯示
 
